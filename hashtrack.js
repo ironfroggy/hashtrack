@@ -3,6 +3,39 @@
    and hook into value changes.
  */
 
+// When the page is ready, the hash has "changed" by being new
+if (typeof $ != "undefined") {
+    $(document).ready(hashtrack.init);
+} else {
+    var $ = {};
+    // This is the only part of jQuery used, so if you don't have it, we'll include it!
+    $.each = function( object, callback, args ) {
+	var name, i = 0, length = object.length;
+	if ( args ) {
+	    if ( length == undefined ) {
+		for ( name in object )
+		    if ( callback.apply( object[ name ], args ) === false )
+			break;
+	    } else
+		for ( ; i < length; )
+		    if ( callback.apply( object[ i++ ], args ) === false )
+			break;
+
+	    // A special, fast, case for the most common use of each
+	} else {
+	    if ( length == undefined ) {
+		for ( name in object )
+		    if ( callback.call( object[ name ], name, object[ name ] ) === false )
+			break;
+	    } else
+		for ( var value = object[0];
+		      i < length && callback.call( value, i, value ) !== false; value = object[++i] ){}
+	}
+
+	return object;
+    };
+}
+
 var hashtrack = {
     'frequency': 100,
     'last_hash': location.hash,
@@ -111,7 +144,4 @@ var hashtrack = {
 	hashtrack.vars[variable] = value;
     }
 };
-
-// When the page is ready, the hash has "changed" by being new
-$(document).ready(hashtrack.init);
 
