@@ -96,14 +96,7 @@ var hashtrack = {
 	return result_vars;
     },
     'getVar': function (variable) {
-	var hash = window.location.hash.slice(1, window.location.hash.length);
-	var vars = hash.split("&");
-	for (var i=0;i<vars.length;i++) {
-	    var pair = vars[i].split("=");
-	    if (pair[0] == variable) {
-		return pair[1];
-	    }
-	}
+	return hashtrack.vars[variable];
     },
 
     'setVar': function (variable, value) {
@@ -115,6 +108,7 @@ var hashtrack = {
 	    new_hash = hash.replace(variable + '=' + hashtrack.getVar(variable), variable + '=' + value);
 	}
 	window.location.hash = new_hash;
+	hashtrack.vars[variable] = value;
     }
 };
 
