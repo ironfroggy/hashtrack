@@ -26,6 +26,22 @@
       span.code {
         font-family: courier;
       }
+
+      table.checklist {
+        border: 1px solid black;
+      }
+
+      table.checklist thead td {
+        border-bottom: 1px dashed grey;
+      }
+
+      table.checklist td.even {
+        background: #eee;
+      }
+
+      table.checklist tbody td {
+        text-align: center;
+      }
     </style>
   </head>
   <body>
@@ -39,6 +55,37 @@
       only thing it uses is <span class="code">$.each()</span> and this can be done in vanilla javascript, which would
       be useful to people who aren't using jQuery. If you want to use this outside jQuery, go ahead and fork hashtrack.js
       <a href="http://github.com/ironfroggy/hashtrack/">at GitHub</a> and I'll merge it in with a big "Thank, You!"</p>
+
+    <p>The main difference between this and previous history libraries is the treating of the hash like a dynamic querystring.</p>
+
+    <p>That is, a URL like <span class="code">http://awesome-news.com/#page=3</span> would be used, where links to other pages
+      would change the hash, the portion after the #, which doesn't load any new page. The hashtrack.js library allows you to register
+      callbacks, either on every hash change or on specific variables, to respond to those changes. This works in a cross-browser fashion.</p>
+
+    <p>hashtrack.js has been tested with:</p>
+
+    <p>
+    <table class="checklist">
+      <thead>
+	<tr>
+	  <td>Firefox 3.0</td>
+	  <td class="even">3.5</td>
+	  <td>Internet Explorer 7</td>
+	  <td class="even">8.0</td>
+	  <td>Safari 4</td>
+	</tr>
+      </thead>
+      <tbody>
+      <tr>
+	<td>Yes!</td>
+	<td class="even">Yep!</td>
+	<td>Yes!</td>
+	<td class="even">Yep!</td>
+	<td>Yes!</td>
+      </tr>
+      </tbody>
+    </table>
+    </p>
 
     <p>
       <h3>hashtrack.js API</h3>
