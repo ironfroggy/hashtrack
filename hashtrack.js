@@ -3,10 +3,7 @@
    and hook into value changes.
  */
 
-// When the page is ready, the hash has "changed" by being new
-if (typeof $ != "undefined") {
-    $(document).ready(hashtrack.init);
-} else {
+if (typeof $ == "undefined") {
     var $ = {};
     // This is the only part of jQuery used, so if you don't have it, we'll include it!
     $.each = function( object, callback, args ) {
@@ -145,3 +142,6 @@ var hashtrack = {
     }
 };
 
+if (typeof $ != "undefined") {
+    $(document).ready(hashtrack.init);
+}
