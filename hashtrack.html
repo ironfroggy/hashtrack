@@ -1,0 +1,99 @@
+<html>
+  <head>
+    <title>hashtrack.js</title>
+    <script type="text/javascript" src="jquery_dev.js"></script>
+    <script type="text/javascript" src="hashtrack.js"></script>
+    <script type="text/javascript">
+      <!--
+	  $(document).ready(function(){
+	      $("input").change(function() {
+	          var val = $(this).val();
+		  var name = $(this).attr('name');
+		  hashtrack.setVar(name, val);
+	      });
+	      hashtrack.onhashchange(function(hash) {
+	          $('#var1').val(hashtrack.getVar("var1"));
+	          $('#var2').val(hashtrack.getVar("var2"));
+	      });
+	  });
+	-->
+    </script>
+    <style>
+      p {
+        margin-left: 2em;
+      }
+
+      span.code {
+        font-family: courier;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>hashtrack.js - # meets ? makes <3</h1>
+
+    <p>This is just a little utility I wrote a couple years ago and pulled out of the closet recently for a project,
+      so I thought it was a good time to do something with it. This is like many other history trackers and similar,
+      but has a few extra features.</p>
+
+
+    <p>
+      <h3>hashtrack.js API</h3>
+
+      <pre>hashtrack</pre>
+      <p>The global hashtrack object maintains all state and API functions<p>
+
+      <pre>hashtrack.onhashchange(<i>callback(hash)</i>)</pre>
+      <p>Register a callback to be called with the current location hash every time it changes.</p>
+
+      <pre>hashtrack.onhashvarchange(<i>varname</i>, <i>callback(value)</i>)</pre>
+      <p>Register a callback to the called with the current value of a "hash variable", which is parsed out of the location hash similar to how a querystring is parsed.
+
+	<pre>
+	  hashtrack.onhashvarchange("background", function (value) {
+	      $('body').css('background', value);
+	  }, true);
+	</pre>
+	<script type="text/javascript">
+	  <!--
+	      $(document).ready(function(){
+	      hashtrack.onhashvarchange("background", function (value) {
+	          $('body').css('background', value);
+	      }, true);
+	      });
+	    -->
+	</script>
+
+	<p>This example changes the page's background according to a parsed variable "background" from the hash. The optional <span class="code">true</span> passed as the last parameter triggers the callback with any current value, which is useful to reflect hash variables on page load. Try these links to demonstrate it:</p>
+        <p><a href="#background=white">white</a></p>
+	<p><a href="#background=grey">grey</a></p>
+	<p><a href="#background=yellow">yellow</a></p>
+      </p>
+
+      <pre>hashtrack.getVar(<i>name</i>)</pre>
+      <p>Returns the current value of the hash variable <i>name</i> as parsed.</p>
+
+      <pre>hashtrack.setVar(<i>name</i>, <i>value</i>)</pre>
+      <p>Changes a named variable in the hash string, leaving the rest of it unchanged.<p>
+
+      <p>
+	These examples call <span class="code">hashtrack.setVar()</span> when the field values change, which you can see reflected in the URL bar above.
+	<br />
+	<label for="var1">var1:</label><input type="text" name="var1" id="var1"></input>
+	<br />
+	<label for="var2">var2:</label><input type="text" name="var2" id="var2"></input>
+      </p>
+
+      <pre>hashtrack.setFrequency(<i>milliseconds</i>)</pre>
+      <p>Changes the frequency in which the hash is polled on browsers that do not support the hashchange event. <i>Default = 100</i></p>
+
+      <pre>hashtrack.init()</pre>
+      <p>Automatically called when the page is ready and sets up the hashtrack environment and polling. Can be called again if hashtracking is paused.</p>
+
+      <pre>hashtrack.stop()</pre>
+      <p>Stops hashtracking until it is started again via <span class="code">hashtrack.init()</span>.</p>
+
+      <br />
+      <center>Copyright 2009 Calvin Spealman of Pantechnoco</center>
+    </p>
+  </body>
+</html>
