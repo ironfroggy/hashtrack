@@ -27,14 +27,14 @@
 
 var hashtrack = {
     'frequency': 100,
-    'last_hash': location.hash,
+    'last_hash': window.location.hash,
     'onhashchange_callbacks': [],
     'onhashvarchange_callbacks': {},
     'first_call': [],
     'interval': null,
 
     'check_hash': function() {
-        if (location.hash != hashtrack.last_hash)
+        if (window.location.hash != hashtrack.last_hash)
         {
             hashtrack.last_hash = location.hash;
             hashtrack.updateVars();
@@ -46,13 +46,13 @@ var hashtrack = {
             hashtrack.interval = setInterval(hashtrack.check_hash,
                              hashtrack.frequency);
         }
-        if (typeof hashtrack.vars == "undefined") {
+        if (typeof hashtrack.vars === 'undefined') {
             hashtrack.vars = {};
         }
         hashtrack.updateVars();
         // Act on the hash as if it changed when the page loads, if its
         // "important"
-        if (location.hash) {
+        if (window.location.hash) {
             hashtrack.call_onhashchange_callbacks();
         }
     },
@@ -60,9 +60,9 @@ var hashtrack = {
         if (hashtrack.frequency != freq) {
             hashtrack.frequency = freq;
             if (hashtrack.interval) {
-            clearInterval(hashtrack.interval);
-            hashtrack.interval = setInterval(
-                    hashtrack.check_hash, hashtrack.frequency);
+                clearInterval(hashtrack.interval);
+                hashtrack.interval = setInterval(
+                        hashtrack.check_hash, hashtrack.frequency);
             }
         }
     },
@@ -116,7 +116,7 @@ var hashtrack = {
         var hash = window.location.hash.slice(1, window.location.hash.length);
         var vars = hash.split("&");
         var result_vars = {};
-        for (var i=0;i<vars.length;i++) {
+        for (var i = 0; i < vars.length; i++) {
             var pair = vars[i].split("=");
             result_vars[pair[0]] = pair[1];
         }
@@ -141,6 +141,8 @@ var hashtrack = {
     }
 };
 
-if (typeof $ != "undefined") {
+if (typeof $ !== 'undefined') {
     $(document).ready(hashtrack.init);
+} else if (typeof jQuery !== 'undefined') {
+    jQuery(document).ready(hashtrack.init);
 }
