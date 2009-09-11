@@ -37,7 +37,7 @@ var hashtrack = {
         if (window.location.hash != hashtrack.last_hash)
         {
             hashtrack.last_hash = location.hash;
-            hashtrack.updateVars();
+            hashtrack.update();
             hashtrack.call_onhashchange_callbacks();
         }
     },
@@ -49,7 +49,7 @@ var hashtrack = {
         if (typeof hashtrack.vars === 'undefined') {
             hashtrack.vars = {};
         }
-        hashtrack.updateVars();
+        hashtrack.update();
         // Act on the hash as if it changed when the page loads, if its
         // "important"
         if (window.location.hash) {
@@ -82,7 +82,7 @@ var hashtrack = {
         }
         hashtrack.onhashvarchange_callbacks[varname].push(func);
         if (first_call) {
-            func(hashtrack.getVar(varname));
+            func(hashtrack.get(varname));
         }
     },
     'call_onhashchange_callbacks': function() {
@@ -103,8 +103,8 @@ var hashtrack = {
             }
         }
     },
-    'updateVars': function () {
-        var vars = hashtrack.getAllVars();
+    'update': function () {
+        var vars = hashtrack.all();
         for (var k in vars) {
             if (hashtrack.vars[k] != vars[k]) {
                 hashtrack.call_onhashvarchange_callbacks(k, vars[k]);
@@ -112,32 +112,32 @@ var hashtrack = {
         }
         hashtrack.vars = vars;
     },
-    'getAllVars': function () {
-        var hash = window.location.hash.slice(1, window.location.hash.length);
-        var vars = hash.split("&");
-        var result_vars = {};
+    'all': function () {
+        var hash = window.location.hash.slice(1, window.location.hash.length),
+            vars = hash.split("&"),
+            result_vars = {};
         for (var i = 0; i < vars.length; i++) {
             var pair = vars[i].split("=");
             result_vars[pair[0]] = pair[1];
         }
         return result_vars;
     },
-    'getVar': function (variable) {
-        return hashtrack.vars[variable];
+    'get': function (key) {
+        return hashtrack.vars[key];
     },
-    'setVar': function (variable, value) {
-        var hash = window.location.hash.slice(1, window.location.hash.length);
-        var new_hash;
-        if (hash.indexOf(variable + '=') == -1) {
-            new_hash = hash + '&' + variable + '=' + value;
+    'set': function (key, value) {
+        var hash = window.location.hash.slice(1, window.location.hash.length),
+            new_hash;
+        if (hash.indexOf(key + '=') === -1) {
+            new_hash = hash + '&' + key + '=' + value;
         } else {
             new_hash = hash.replace(
-                    variable + '=' + hashtrack.getVar(variable),
-                    variable + '=' + value
+                    key + '=' + hashtrack.get(key),
+                    key + '=' + value
             );
         }
         window.location.hash = new_hash;
-        hashtrack.vars[variable] = value;
+        hashtrack.vars[key] = value;
     }
 };
 

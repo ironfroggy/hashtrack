@@ -9,11 +9,11 @@
 	      $("input").change(function() {
 	          var val = $(this).val();
 		  var name = $(this).attr('name');
-		  hashtrack.setVar(name, val);
+		  hashtrack.set(name, val);
 	      });
 	      hashtrack.onhashchange(function(hash) {
-	          $('#var1').val(hashtrack.getVar("var1"));
-	          $('#var2').val(hashtrack.getVar("var2"));
+	          $('#var1').val(hashtrack.get("var1"));
+	          $('#var2').val(hashtrack.get("var2"));
 	      });
 	  });
 	-->
