@@ -3,7 +3,7 @@
    and hook into value changes.
 
    Copyright (c) 2009 Calvin Spealman, ironfroggy@gmail.com
-   Embedded $.each function is Copyright (c) 2009 John Resig, http://jquery.com/
+r   Embedded $.each function is Copyright (c) 2009 John Resig, http://jquery.com/
 
    Permission is hereby granted, free of charge, to any person obtaining
    a copy of this software and associated documentation files (the
@@ -164,6 +164,18 @@ var hashtrack = {
 	hashtrack.vars[variable] = value;
     }
 };
+
+if (typeof route != "undefined") {
+    hashtrack.path = function (match, func) {
+	route(match).bind(function(){
+		path_and_qs = routes.args.path.split('?');
+		qs = path_and_qs[1];
+		path = [];
+		$.each(path_and_qs[0].split('/'), function(){ if (this.length > 0) { path.push(this); } });
+		func(path);
+	    });
+    };
+}
 
 if (typeof $ != "undefined") {
     $(document).ready(hashtrack.init);

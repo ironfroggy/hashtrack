@@ -2,6 +2,7 @@
   <head>
     <title>hashtrack.js</title>
     <script type="text/javascript" src="jquery_dev.js"></script>
+    <script type="text/javascript" src="route.js"></script>
     <script type="text/javascript" src="hashtrack.js"></script>
     <script type="text/javascript">
       <!--
@@ -12,9 +13,11 @@
 		  hashtrack.setVar(name, val);
 	      });
 	      hashtrack.onhashchange(function(hash) {
+	          route(location.hash).run()
 	          $('#var1').val(hashtrack.getVar("var1"));
 	          $('#var2').val(hashtrack.getVar("var2"));
 	      });
+
 	  });
 	-->
     </script>
@@ -142,6 +145,22 @@
 
       <pre>hashtrack.stop()</pre>
       <p>Stops hashtracking until it is started again via <span class="code">hashtrack.init()</span>.</p>
+
+      <h3>route.js is supported by hashtrack.hs</h3>
+      <p>If you include the route.js library, hashtrack.js will automatically run it on hash changes.</p>
+
+      <p>This combines hashtrack.js functionality to allow hashes that look like paths.</p>
+
+      <script type="text/javascript">
+	<!--
+	    hashtrack.path("#/page", function(path) {
+	        document.title = path[0];
+	    });
+	  -->
+      </script>
+
+      <a href="#/page/ONE">ONE</a>
+      <a href="#/page/TWO">TWO</a>
 
       <br />
       <center>Copyright 2009 Calvin Spealman of Pantechnoco</center>
