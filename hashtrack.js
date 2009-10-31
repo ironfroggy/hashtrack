@@ -136,6 +136,11 @@ var hashtrack = {
 		    hashtrack.call_onhashvarchange_callbacks(name, value);
 		}
 	    });
+	$.each(hashtrack.vars, function (name, values) {
+		if (!(name in vars)) {
+		    hashtrack.call_onhashvarchange_callbacks(name, "");
+		}
+	    });
 	hashtrack.vars = vars;
     },
     'getAllVars': function () {
