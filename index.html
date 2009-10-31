@@ -146,7 +146,7 @@
       <pre>hashtrack.stop()</pre>
       <p>Stops hashtracking until it is started again via <span class="code">hashtrack.init()</span>.</p>
 
-      <h3>route.js is supported by hashtrack.hs</h3>
+      <h3>route.js is supported by hashtrack.js</h3>
       <p>If you include the route.js library, hashtrack.js will automatically run it on hash changes.</p>
 
       <p>This combines hashtrack.js functionality to allow hashes that look like paths.</p>
@@ -159,8 +159,16 @@
 	  -->
       </script>
 
-      <a href="#/page/ONE">ONE</a>
-      <a href="#/page/TWO">TWO</a>
+      <pre>
+	    hashtrack.path("#/page", function(path) {
+	        document.title = path[0];
+	    });
+      </pre>
+
+      <p>
+	<a href="#/page/ONE">#/page/ONE</a>
+	<a href="#/page/TWO">#/page/TWO</a>
+      </p>
 
       <br />
       <center>Copyright 2009 Calvin Spealman of Pantechnoco</center>
