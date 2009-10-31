@@ -3,6 +3,7 @@
    and hook into value changes.
 
    Copyright (c) 2009 Calvin Spealman, ironfroggy@gmail.com
+   Embedded $.each function is Copyright (c) 2009 John Resig, http://jquery.com/
 
    Permission is hereby granted, free of charge, to any person obtaining
    a copy of this software and associated documentation files (the
@@ -24,6 +25,36 @@
    WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
  */
+
+if (typeof $ == "undefined") {
+    var $ = {};
+    // This is the only part of jQuery used, so if you don't have it, we'll include it!
+    $.each = function( object, callback, args ) {
+	var name, i = 0, length = object.length;
+	if ( args ) {
+	    if ( length == undefined ) {
+		for ( name in object )
+		    if ( callback.apply( object[ name ], args ) === false )
+			break;
+	    } else
+		for ( ; i < length; )
+		    if ( callback.apply( object[ i++ ], args ) === false )
+			break;
+
+	    // A special, fast, case for the most common use of each
+	} else {
+	    if ( length == undefined ) {
+		for ( name in object )
+		    if ( callback.call( object[ name ], name, object[ name ] ) === false )
+			break;
+	    } else
+		for ( var value = object[0];
+		      i < length && callback.call( value, i, value ) !== false; value = object[++i] ){}
+	}
+
+	return object;
+    };
+}
 
 var hashtrack = {
     'frequency': 100,
@@ -85,31 +116,27 @@ var hashtrack = {
 	}
     },
     'call_onhashchange_callbacks': function() {
-        var hash = window.location.hash.slice(1);
-        for (var i = 0; i < hashtrack.onhashchange_callbacks.length; i++) {
-            var f = hashtrack.onhashchange_callbacks[i];
-            if (typeof f === 'function') {
-                f(hash);
-            }
-        }
+        var hash = location.hash.slice(1);
+        $.each(hashtrack.onhashchange_callbacks, function() {
+            this(hash);
+        });
     },
     'call_onhashvarchange_callbacks': function(name, value) {
-        if (name in hashtrack.onhashvarchange_callbacks) {
-            for (var f in hashtrack.onhashvarchange_callbacks[name]) {
-                if (typeof f === 'function') {
-                    f(value);
-                }
-            }
-        }
+	if (name in hashtrack.onhashvarchange_callbacks) {
+	    $.each(hashtrack.onhashvarchange_callbacks[name], function() {
+		this(value);
+	    });
+	}
     },
+
     'updateVars': function () {
 	var vars = hashtrack.getAllVars();
-        for (var k in vars) {
-            if (hashtrack.vars[k] != vars[k]) {
-                hashtrack.call_onhashvarchange_callbacks(k, vars[k]);
-            }
-        }
-        hashtrack.vars = vars;
+	$.each(vars, function (name, value) {
+		if (hashtrack.vars[name] != value) {
+		    hashtrack.call_onhashvarchange_callbacks(name, value);
+		}
+	    });
+	hashtrack.vars = vars;
     },
     'getAllVars': function () {
 	var hash = window.location.hash.slice(1, window.location.hash.length);
