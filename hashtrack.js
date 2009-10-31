@@ -139,8 +139,17 @@ var hashtrack = {
 	hashtrack.vars = vars;
     },
     'getAllVars': function () {
+	var path; var qs;
 	var hash = window.location.hash.slice(1, window.location.hash.length);
-	var vars = hash.split("&");
+	var path_and_qs = hash.split("?");
+
+	if (path_and_qs.length == 2) {
+	    path = path_and_qs[0];
+	    qs = path_and_qs[1];
+	} else {
+	    qs = hash;
+	}
+	var vars = qs.split("&");
 	var result_vars = {};
 	for (var i=0;i<vars.length;i++) {
 	    var pair = vars[i].split("=");
