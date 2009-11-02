@@ -170,6 +170,7 @@ var hashtrack = {
 
     'setVar': function (variable, value) {
 	var hash = window.location.hash.slice(1, window.location.hash.length);
+	
 	var new_hash;
 	if (hash.indexOf(variable + '=') == -1) {
 	    new_hash = hash + '&' + variable + '=' + value;
@@ -178,7 +179,29 @@ var hashtrack = {
 	}
 	window.location.hash = new_hash;
 	hashtrack.vars[variable] = value;
-    }
+    },
+
+    'getPath': function () {
+	return hashtrack.parseHash(location.hash).path;
+    },
+
+    'setPath': function (new_path) {
+	pq = hashtrack.parseHash(location);
+	if (pq.path == new_path) {
+	    return;
+	} else {
+	    if (location.hash[1] == "/") {
+		if (pq.qs.length > 0) {
+		    // #/foo/bar/?baz=10
+		    
+		} else {
+		    // #/foo/bar
+		}
+	    } else {
+		// #?baz=foo
+	    }
+	}
+    },
 
     parseHash: function (string) {
 	path__qs = _path_qs(string);
