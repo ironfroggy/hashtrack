@@ -143,9 +143,11 @@ var hashtrack = {
 	    });
 	hashtrack.vars = vars;
     },
-    'getAllVars': function () {
+    'getAllVars': function (hash) {
 	var path; var qs;
-	var hash = window.location.hash.slice(1, window.location.hash.length);
+	if (typeof hash == "undefined") {
+	    var hash = window.location.hash.slice(1, window.location.hash.length);
+	}
 	var path_and_qs = hash.split("?");
 
 	if (path_and_qs.length == 2) {
@@ -177,7 +179,42 @@ var hashtrack = {
 	window.location.hash = new_hash;
 	hashtrack.vars[variable] = value;
     }
+
+    parseHash: function (string) {
+	path__qs = _path_qs(string);
+	return {'path': path__qs[0], 'qs': path__qs[1]}
+    };
 };
+
+function _path_qs (string) {
+    var path__qs = string.split("?");
+    if (path__qs.length == 1) {
+	if (string[0] == "/") {
+	    return [path__qs, ""];
+	} else {
+	    return ["", path__qs];
+	}
+    } else {
+	return [path__qs[0], path__qs[1]];
+    }
+}
+
+function _path (string) {
+    return _path_qs(string)[0];
+}
+
+function _qs (string) {
+    return _path_qs(string)[1];
+}
+
+function addHashQuery(a) {
+    var href = $(a).attr('href');
+    var new_vars = hashtrack.getAllVars(_qs(href));
+    $.each(new_vars, function (name, value) {
+	    hashtrack.setVar(name, value);
+	});
+    return false;
+}
 
 if (typeof route != "undefined") {
     hashtrack.path = function (match, func) {
