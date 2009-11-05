@@ -206,7 +206,7 @@ var hashtrack = {
     parseHash: function (string) {
 	path__qs = _path_qs(string);
 	return {'path': path__qs[0], 'qs': path__qs[1]}
-    };
+    }
 };
 
 function _path_qs (string) {
