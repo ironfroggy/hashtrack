@@ -3,6 +3,7 @@
    and hook into value changes.
 
    Copyright (c) 2009 Calvin Spealman, ironfroggy@gmail.com
+   Embedded $.each function is Copyright (c) 2009 John Resig, http://jquery.com/
 
    Permission is hereby granted, free of charge, to any person obtaining
    a copy of this software and associated documentation files (the
@@ -25,19 +26,49 @@
 
  */
 
+if (typeof $ === "undefined") {
+    var $ = {};
+    // This is the only part of jQuery used, so if you don't have it, we'll include it!
+    $.each = function( object, callback, args ) {
+	var name, i = 0, length = object.length;
+	if ( args ) {
+	    if ( length == undefined ) {
+		for ( name in object )
+		    if ( callback.apply( object[ name ], args ) === false )
+			break;
+	    } else
+		for ( ; i < length; )
+		    if ( callback.apply( object[ i++ ], args ) === false )
+			break;
+
+	    // A special, fast, case for the most common use of each
+	} else {
+	    if ( length == undefined ) {
+		for ( name in object )
+		    if ( callback.call( object[ name ], name, object[ name ] ) === false )
+			break;
+	    } else
+		for ( var value = object[0];
+		      i < length && callback.call( value, i, value ) !== false; value = object[++i] ){}
+	}
+
+	return object;
+    };
+}
+
 var hashtrack = {
     'frequency': 100,
-    'last_hash': window.location.hash,
+    'last_hash': location.hash,
     'onhashchange_callbacks': [],
     'onhashvarchange_callbacks': {},
     'first_call': [],
     'interval': null,
 
     'check_hash': function() {
-        if (window.location.hash != hashtrack.last_hash)
+        if (location.hash != hashtrack.last_hash)
         {
             hashtrack.last_hash = location.hash;
-            hashtrack.update();
+            hashtrack.updateVars();
             hashtrack.call_onhashchange_callbacks();
         }
     },
@@ -46,13 +77,13 @@ var hashtrack = {
             hashtrack.interval = setInterval(hashtrack.check_hash,
                              hashtrack.frequency);
         }
-        if (typeof hashtrack.vars === 'undefined') {
+        if (typeof hashtrack.vars === "undefined") {
             hashtrack.vars = {};
         }
-        hashtrack.update();
+        hashtrack.updateVars();
         // Act on the hash as if it changed when the page loads, if its
         // "important"
-        if (window.location.hash) {
+        if (location.hash) {
             hashtrack.call_onhashchange_callbacks();
         }
     },
@@ -60,9 +91,8 @@ var hashtrack = {
         if (hashtrack.frequency != freq) {
             hashtrack.frequency = freq;
             if (hashtrack.interval) {
-                clearInterval(hashtrack.interval);
-                hashtrack.interval = setInterval(
-                        hashtrack.check_hash, hashtrack.frequency);
+            clearInterval(hashtrack.interval);
+            hashtrack.interval = setInterval(hashtrack.check_hash, hashtrack.frequency);
             }
         }
     },
@@ -82,101 +112,139 @@ var hashtrack = {
         }
         hashtrack.onhashvarchange_callbacks[varname].push(func);
         if (first_call) {
-            func(hashtrack.get(varname));
+            func(hashtrack.getVar(varname));
         }
     },
     'call_onhashchange_callbacks': function() {
-        var hash = window.location.hash.slice(1);
-        for (var i = 0; i < hashtrack.onhashchange_callbacks.length; i++) {
-            var f = hashtrack.onhashchange_callbacks[i];
-            if (typeof f === 'function') {
-                f(hash);
-            }
-        }
+        var hash = location.hash.slice(1);
+        $.each(hashtrack.onhashchange_callbacks, function() {
+            this(hash);
+        });
     },
     'call_onhashvarchange_callbacks': function(name, value) {
         if (name in hashtrack.onhashvarchange_callbacks) {
-            for (var f in hashtrack.onhashvarchange_callbacks[name]) {
-                if (typeof f === 'function') {
-                    f(value);
-                }
-            }
+            $.each(hashtrack.onhashvarchange_callbacks[name], function() {
+            this(value);
+            });
         }
     },
-    'update': function () {
-        var vars = hashtrack.all();
-        for (var k in vars) {
-            if (hashtrack.vars[k] != vars[k]) {
-                hashtrack.call_onhashvarchange_callbacks(k, vars[k]);
+
+    'updateVars': function () {
+        var vars = hashtrack.getAllVars();
+        $.each(vars, function (name, value) {
+            if (hashtrack.vars[name] != value) {
+                hashtrack.call_onhashvarchange_callbacks(name, value);
             }
-        }
+            });
+        $.each(hashtrack.vars, function (name, values) {
+            if (!(name in vars)) {
+                hashtrack.call_onhashvarchange_callbacks(name, "");
+            }
+            });
         hashtrack.vars = vars;
     },
-    'all': function () {
-        var hash = window.location.hash.slice(1, window.location.hash.length),
-            vars = hash.split("&"),
-            result_vars = {};
-        for (var i = 0; i < vars.length; i++) {
+    'getAllVars': function (hash) {
+        var path; var qs;
+        if (typeof hash === "undefined") {
+            var hash = window.location.hash.slice(1, window.location.hash.length);
+        }
+        var path_and_qs = hash.split("?");
+
+        if (path_and_qs.length == 2) {
+            path = path_and_qs[0];
+            qs = path_and_qs[1];
+        } else {
+            qs = hash;
+        }
+        var vars = qs.split("&");
+        var result_vars = {};
+        for (var i=0;i<vars.length;i++) {
             var pair = vars[i].split("=");
             result_vars[pair[0]] = pair[1];
         }
         return result_vars;
     },
-    'get': function (key) {
-        return hashtrack.vars[key];
+    'getVar': function (variable) {
+        return hashtrack.vars[variable];
     },
 
-    'set': function (variable, value) {
-        var hash = window.location.hash.slice(1, window.location.hash.length);
-        
-        var new_hash;
+    'setVar': function (variable, value) {
+        var hash = window.location.hash.slice(1, window.location.hash.length)
+        ,   new_hash
+        ,   removing = !value
+        ;
+
         if (hash.indexOf(variable + '=') == -1) {
-            new_hash = hash + '&' + variable + '=' + value;
+            if (!removing) {
+                new_hash = hash + '&' + variable + '=' + value;
+            } else {
+                new_hash = hash;
+            }
         } else {
-            new_hash = hash.replace(variable + '=' + hashtrack.getVar(variable), variable + '=' + value);
+            if (!value) {
+                new_hash = hash.replace(variable + '=' + hashtrack.getVar(variable), "");
+            } else {
+                new_hash = hash.replace(variable + '=' + hashtrack.getVar(variable), variable + '=' + value);
+            }
+        }
+        if (new_hash[new_hash.length - 1]) {
+            new_hash = new_hash.slice(0, new_hash.length - (new_hash[new_hash.length - 1] === '?' ? 1 : 0));
         }
         window.location.hash = new_hash;
         hashtrack.vars[variable] = value;
     },
 
     'getPath': function () {
-        return hashtrack.parseHash(location.hash).path;
+        var path = hashtrack.parseHash(location.hash).path;
+        console.debug("getPath() -> " + path);
+        return path;
     },
 
     'setPath': function (new_path) {
-        pq = hashtrack.parseHash(location);
-        if (pq.path == new_path) {
+        var pq = hashtrack.parseHash(location.hash)
+        ,   path = pq[0]
+        ,   querystring = pq[1]
+        ,   new_path = new_path[0] !== '/' ? new_path : new_path.slice(1, new_path.length)
+        ;
+
+        if (path == new_path) {
+            // No change in path
             return;
-        } else {
-            if (location.hash[1] == "/") {
-            if (pq.qs.length > 0) {
-                // #/foo/bar/?baz=10
-                
-            } else {
-                // #/foo/bar
-            }
-            } else {
-            // #?baz=foo
-            }
         }
+
+        location.hash = ['#/', new_path, querystring ? '' : '?', querystring].join('');
     },
 
     parseHash: function (string) {
-        path__qs = _path_qs(string);
-        return {'path': path__qs[0], 'qs': path__qs[1]}
+        var path__qs = _path_qs(string)
+        ,   s = '#!/'
+        ,   i = 0
+        ,   p = path__qs[0]
+        ;
+
+        for (; i < 3; i++) {
+            if (p[0] === s[i]) {
+                p = p.slice(1, p.length);
+            }
+        }
+        
+        return {'path': p, 'qs': path__qs[1]}
     }
 };
 
 function _path_qs (string) {
-    var path__qs = string.split("?");
+    var string = string[0]==='#' ? string.slice(1, string.length) : string
+    ,   path__qs = string.split("?")
+    ;
     if (path__qs.length == 1) {
-	if (string[0] == "/") {
-	    return [path__qs, ""];
-	} else {
-	    return ["", path__qs];
-	}
+        console.debug("path parts:", path__qs);
+        if (path__qs[0].indexOf('=') < 0) {
+            return [path__qs[0], ""];
+        } else {
+            return ["", path__qs[0]];
+        }
     } else {
-	return [path__qs[0], path__qs[1]];
+        return [path__qs[0], path__qs[1]];
     }
 }
 
@@ -190,9 +258,9 @@ function _qs (string) {
 
 function addHashQuery(a) {
     var href = $(a).attr('href');
-    var new_vars = hashtrack.all(_qs(href));
+    var new_vars = hashtrack.getAllVars(_qs(href));
     $.each(new_vars, function (name, value) {
-	    hashtrack.set(name, value);
+	    hashtrack.setVar(name, value);
 	});
     return false;
 }
@@ -200,7 +268,12 @@ function addHashQuery(a) {
 if (typeof route != "undefined") {
     hashtrack.path = function (match, func) {
 	route(match).bind(function(){
-		path_and_qs = routes.args.path.split('?');
+                var path_and_qs;
+                if (typeof routes.args != "undefined") {
+                    path_and_qs = routes.args.path.split('?');
+                } else {
+                    path_and_qs = ['', '']
+                }
 		qs = path_and_qs[1];
 		path = [];
 		$.each(path_and_qs[0].split('/'), function(){ if (this.length > 0) { path.push(this); } });
@@ -211,6 +284,4 @@ if (typeof route != "undefined") {
 
 if (typeof $ != "undefined") {
     $(document).ready(hashtrack.init);
-} else if (typeof jQuery !== 'undefined') {
-    jQuery(document).ready(hashtrack.init);
 }
