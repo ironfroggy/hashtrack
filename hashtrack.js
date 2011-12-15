@@ -103,7 +103,7 @@ var hashtrack = {
     'onhashchange': function(func, first_call) {
         hashtrack.onhashchange_callbacks.push(func);
         if (first_call) {
-            func(location.hash.slice(1));
+            func(location.hash.slice(1), first_call);
         }
     },
     'onhashvarchange': function(varname, func, first_call) {
@@ -112,7 +112,7 @@ var hashtrack = {
         }
         hashtrack.onhashvarchange_callbacks[varname].push(func);
         if (first_call) {
-            func(hashtrack.getVar(varname));
+            func(hashtrack.getVar(varname), first_call);
         }
     },
     'call_onhashchange_callbacks': function() {
