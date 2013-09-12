@@ -30,7 +30,6 @@ var hashtrack = {
     'last_hash': window.location.hash,
     'onhashchange_callbacks': [],
     'onhashvarchange_callbacks': {},
-    'first_call': [],
     'interval': null,
 
     'check_hash': function() {
@@ -72,18 +71,15 @@ var hashtrack = {
     },
     'onhashchange': function(func, first_call) {
         hashtrack.onhashchange_callbacks.push(func);
-        if (first_call) {
-            func(location.hash.slice(1));
-        }
+        var pq = hashtrack.parseHash(location.hash);
+        func(location.hash.slice(1), pq.path);
     },
     'onhashvarchange': function(varname, func, first_call) {
         if (!(varname in hashtrack.onhashvarchange_callbacks)) {
             hashtrack.onhashvarchange_callbacks[varname] = [];
         }
         hashtrack.onhashvarchange_callbacks[varname].push(func);
-        if (first_call) {
-            func(hashtrack.get(varname));
-        }
+        func(varname, hashtrack.getVar(name));
     },
     'call_onhashchange_callbacks': function() {
         var hash = window.location.hash.slice(1);
@@ -96,9 +92,10 @@ var hashtrack = {
     },
     'call_onhashvarchange_callbacks': function(name, value) {
         if (name in hashtrack.onhashvarchange_callbacks) {
-            for (var f in hashtrack.onhashvarchange_callbacks[name]) {
+            for (var i in hashtrack.onhashvarchange_callbacks[name]) {
+                var f = hashtrack.onhashvarchange_callbacks[name][i];
                 if (typeof f === 'function') {
-                    f(value);
+                    f(name, value);
                 }
             }
         }
@@ -122,21 +119,29 @@ var hashtrack = {
         }
         return result_vars;
     },
-    'get': function (key) {
+    'getVar': function (key) {
         return hashtrack.vars[key];
     },
 
-    'set': function (variable, value) {
+    'setVar': function (variable, value) {
         var hash = window.location.hash.slice(1, window.location.hash.length);
-
-        var new_hash;
-        if (hash.indexOf(variable + '=') == -1) {
-            new_hash = hash + '&' + variable + '=' + value;
+        var path = hash.replace(/\?.*/, '');
+        var qs;
+        if (hash.match(/\?/)) {
+            qs = hash.replace(/.*\?/, '');
         } else {
-            new_hash = hash.replace(variable + '=' + hashtrack.getVar(variable), variable + '=' + value);
+            qs = "";
         }
-        window.location.hash = new_hash;
+
+        var new_qs;
+        if (qs.indexOf(variable + '=') == -1) {
+            new_qs = qs + '&' + variable + '=' + value;
+        } else {
+            new_qs = qs.replace(variable + '=' + hashtrack.getVar(variable), variable + '=' + value);
+        }
+        window.location.hash = path + '?' + new_qs;
         hashtrack.vars[variable] = value;
+        hashtrack.call_onhashvarchange_callbacks(variable, value);
     },
 
     'getPath': function () {
@@ -144,20 +149,25 @@ var hashtrack = {
     },
 
     'setPath': function (new_path) {
-        pq = hashtrack.parseHash(location);
+        pq = hashtrack.parseHash(location.hash);
         if (pq.path == new_path) {
             return;
         } else {
-            if (location.hash[1] == "/") {
-            if (pq.qs.length > 0) {
-                // #/foo/bar/?baz=10
+            if (new_path[0] !== '/') {
+                new_path = '/' + new_path;
+            }
+            pq.path = new_path
 
-            } else {
-                // #/foo/bar
+            var build = [];
+            if (pq.path.length > 0) {
+                build.push(pq.path);
             }
-            } else {
-            // #?baz=foo
+            if (pq.qs.length > 0) {
+                build.push('?');
+                build.push(pq.qs);
             }
+
+            location.hash = build.join('');
         }
     },
 
@@ -168,15 +178,16 @@ var hashtrack = {
 };
 
 function _path_qs (string) {
+    var string = string.replace(/^#/, '');
     var path__qs = string.split("?");
     if (path__qs.length == 1) {
-	if (string[0] == "/") {
-	    return [path__qs, ""];
-	} else {
-	    return ["", path__qs];
-	}
+        if (string[0] == "/") {
+            return [path__qs[0], ""];
+        } else {
+            return ["", path__qs[0]];
+        }
     } else {
-	return [path__qs[0], path__qs[1]];
+        return [path__qs[0], path__qs[1]];
     }
 }
 
