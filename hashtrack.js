@@ -111,8 +111,10 @@ var hashtrack = {
     },
     'all': function () {
         var hash = window.location.hash.slice(1, window.location.hash.length),
-            vars = hash.split("&"),
-            result_vars = {};
+            vars, result;
+        hash = hash.split('?')[1] || hash;
+        vars = hash.split("&"),
+        result_vars = {};
         for (var i = 0; i < vars.length; i++) {
             var pair = vars[i].split("=");
             result_vars[pair[0]] = pair[1];
