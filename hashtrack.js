@@ -114,12 +114,12 @@ var hashtrack = {
             vars, result;
         hash = hash.split('?')[1] || hash;
         vars = hash.split("&"),
-        result_vars = {};
+        result = {};
         for (var i = 0; i < vars.length; i++) {
             var pair = vars[i].split("=");
-            result_vars[pair[0]] = pair[1];
+            result[pair[0]] = pair[1];
         }
-        return result_vars;
+        return result;
     },
     'getVar': function (key) {
         return hashtrack.vars[key];
@@ -174,7 +174,7 @@ var hashtrack = {
     },
 
     parseHash: function (string) {
-        path__qs = _path_qs(string);
+        var path__qs = _path_qs(string);
         return {'path': path__qs[0], 'qs': path__qs[1]}
     }
 };
