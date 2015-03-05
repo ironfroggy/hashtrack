@@ -79,7 +79,7 @@ var hashtrack = {
             hashtrack.onhashvarchange_callbacks[varname] = [];
         }
         hashtrack.onhashvarchange_callbacks[varname].push(func);
-        func(varname, hashtrack.getVar(name));
+        func(varname, hashtrack.getVar(varname));
     },
     'call_onhashchange_callbacks': function() {
         var hash = window.location.hash.slice(1);
@@ -226,4 +226,10 @@ if (typeof $ != "undefined") {
     $(document).ready(hashtrack.init);
 } else if (typeof jQuery !== 'undefined') {
     jQuery(document).ready(hashtrack.init);
+}
+
+if (typeof module !== "undefined") {
+    if (typeof module.exports !== "undefined") {
+        module.exports = hashtrack;
+    }
 }
